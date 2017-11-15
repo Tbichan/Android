@@ -1,49 +1,105 @@
-package com.example.tbichan.syaroescape;
+package com.example.syaroescape;
 
+import java.util.ArrayList;
+
+import opengl.GlModel;
+import opengl.GlView;
+import opengl.GlViewBase;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
-
-import com.example.tbichan.syaroescape.OpenGL.view.GlView;
-import com.example.tbichan.syaroescape.scene.SceneBase;
-import com.example.tbichan.syaroescape.scene.SceneManager;
-import com.example.tbichan.syaroescape.title.TitleScene;
-import com.example.tbichan.syaroescape.OpenGL.*;
+import android.util.Log;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.EditText;
+import android.widget.FrameLayout;
 
 public class MainActivity extends Activity {
 
     protected GlView glView;
 
     protected static MainActivity instance;
+    
+    private final int FP = ViewGroup.LayoutParams.FILL_PARENT; 
+    private final int WC = ViewGroup.LayoutParams.WRAP_CONTENT;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
-
-        // åˆæœŸãƒ“ãƒ¥ãƒ¼
+        
+        // ƒ^ƒCƒgƒ‹‚Í–³‚µ
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        
+        //@FrameLayout‚ð€”õ
+        FrameLayout fl = new FrameLayout(this);
+        setContentView(fl);
+        
+        // ‰Šúƒrƒ…[
         glView = new GlView(this);
-        setContentView(glView);
-
-        instance = this;
-
+        fl.addView(glView,new ViewGroup.LayoutParams(WC, WC));
+        
+        // ƒeƒLƒXƒgƒ{ƒbƒNƒX
+        final EditText edit = new EditText(this);
+        edit.setHeight(200);
+        
+        fl.addView(edit, new ViewGroup.LayoutParams(FP, WC));
+        
+        // ƒŒƒCƒAƒEƒg‚ðì‚Á‚ÄÝ’è
         /*
-        // åˆæœŸã‚·ãƒ¼ãƒ³
-        SceneBase firstScene = new TitleScene(this);
+        LinearLayout layout = new LinearLayout(this);
+        layout.setBackgroundColor(Color.rgb(255, 255, 0));
+        layout.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.FILL_PARENT,
+                LinearLayout.LayoutParams.FILL_PARENT));
+        layout.setOrientation(LinearLayout.VERTICAL);
+        this.setContentView(layout);
+        
+        // ƒeƒLƒXƒgƒ{ƒbƒNƒX
+        final EditText edit = new EditText(this);
+        edit.setHeight(50);
+        
+        layout.addView(edit);
+        
 
-        // ã‚·ãƒ¼ãƒ³ãƒžãƒãƒ¼ã‚¸ãƒ£ãƒ¼ã«ã‚»ãƒƒãƒˆ
-        SceneManager.getInstance().setFirstScene(firstScene);
+        // ‰Šúƒrƒ…[
+        glView = new GlView(this);
+        glView.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT));
+        //glView.setBackgroundColor(Color.CYAN);
 
-        Thread thread = new Thread(new Runnable() {
+        layout.addView(glView);
+        
+        */
+
+        // ƒuƒ[ƒhƒLƒƒƒXƒgƒŠƒXƒi[
+        BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
             @Override
-            public void run() {
-                SceneManager sceneManager = SceneManager.getInstance();
-                sceneManager.sceneMain();
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (action != null) {
+                    if (action.equals(Intent.ACTION_SCREEN_ON)) {
+                        // ‰æ–ÊONŽž
+                        Log.d("surface", "SCREEN_ON");
+                        // ƒeƒNƒXƒ`ƒƒƒŠƒ[ƒh
+                        MainActivity.getGlView().loadTexAll();
+                    } else if (action.equals(Intent.ACTION_SCREEN_OFF)) {
+                        // ‰æ–ÊOFFŽž
+                        Log.d("surface", "SCREEN_OFF");
+                    }
+                }
             }
-        });
+        };
 
-        thread.start();*/
+
+        registerReceiver(broadcastReceiver, new IntentFilter(Intent.ACTION_SCREEN_ON));
+        registerReceiver(broadcastReceiver, new IntentFilter(Intent.ACTION_SCREEN_OFF));
+		
+        instance = this;
     }
 
     @Override
@@ -58,14 +114,19 @@ public class MainActivity extends Activity {
         if (glView != null) glView.onPause();
     }
 
-    // ãƒ“ãƒ¥ãƒ¼ã‚’è¨­å®šã™ã‚‹ã€‚
+    // ƒrƒ…[‚ðÝ’è‚·‚éB
     public static void setGlView(GlViewBase glView) {
         instance.setContentView(glView);
     }
 
-    // ãƒ“ãƒ¥ãƒ¼ã‚’å–å¾—ã™ã‚‹ã€‚
+    // ƒrƒ…[‚ðŽæ“¾‚·‚éB
     public static GlView getGlView(){
         return instance.glView;
+    }
+    
+    // Model‚Ìƒ^ƒOŒŸõ‚ðs‚¢‚Ü‚·B
+    public static ArrayList<GlModel> findTagAll(String tag) { 
+        return instance.glView.findTagAll(tag);
     }
 
     public static Context getContext() { return (Context)instance; }
